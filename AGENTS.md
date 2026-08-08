@@ -30,7 +30,7 @@ The plugin must preserve these user-visible behaviors unless a release explicitl
 - `docs/architecture.md` — architecture and design constraints.
 - `docs/getting_started.md` — installation, configuration, validation, and troubleshooting.
 - `docs/screenshots` — App Store screenshots referenced by `package.json`.
-- `../../Downloads/signalk-to-boating/.github/workflows/plugin-ci.yml` — caller for Signal K's canonical reusable plugin CI.
+- `.github/workflows/plugin-ci.yml` — caller for Signal K's canonical reusable plugin CI.
 - `CHANGELOG.md` — per-version user-visible release notes.
 - `README.md` — npm and Signal K App Store landing documentation.
 
@@ -147,7 +147,7 @@ The package is intended for the Signal K App Store. Keep these invariants:
 - `CHANGELOG.md` remains present and has a heading for every published version.
 - the published tarball contains every file referenced by `main`, `exports`, icon/screenshots metadata, README, docs required by users, license, changelog, and this `AGENTS.md`.
 - no `preinstall`, `install`, or `postinstall` script is required; Signal K App Store installation uses `--ignore-scripts`.
-- `../../Downloads/signalk-to-boating/.github/workflows/plugin-ci.yml` should call the current reusable workflow from `SignalK/signalk-server`; consult the upstream workflow before changing its inputs.
+- `.github/workflows/plugin-ci.yml` should call the current reusable workflow from `SignalK/signalk-server`; consult the upstream workflow before changing its inputs.
 
 A local test result does **not** prove a 100% remote Signal K registry score. The authoritative score is produced after repository/npm publication by Signal K infrastructure.
 

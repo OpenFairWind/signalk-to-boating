@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.2
+- Add the canonical Signal K reusable CI caller to the published repository so the plugin registry can observe automated test results.
+- Run unit, coverage, armv7/Cerbo GX, and Signal K integration checks in hosted CI.
+- Add visible CI, npm release/download, and license indicators to the README.
+- Document how App Store indicators differ from local validation and external popularity metrics.
+
 ## 0.4.1
 - Stop fabricating GGA satellite count, HDOP, and altitude fields when Signal K does not provide them.
 - Correct AIS Class B type 18 output from 169 bits to the standard 168-bit message length.

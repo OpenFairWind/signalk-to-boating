@@ -24,7 +24,7 @@ For development or pre-release testing:
 
 ```sh
 cd ~/.signalk
-npm install /path/to/signalk-to-boating-0.4.1.tgz
+npm install /path/to/signalk-to-boating-0.4.2.tgz
 ```
 
 ## Enable the plugin
@@ -149,7 +149,13 @@ npm pack --dry-run
 npm audit --omit=dev
 ```
 
-The repository also contains `.github/workflows/plugin-ci.yml`, which invokes Signal K's canonical reusable plugin CI. That upstream workflow performs package validation, schema/lifecycle checks, API-use scans, package/install checks, cross-platform testing, and optional Signal K integration.
+The repository also contains `.github/workflows/plugin-ci.yml`, which invokes Signal K's canonical reusable plugin CI on every push and pull request. It performs package validation, schema/lifecycle checks, API-use scans, package/install checks, cross-platform unit and coverage testing, armv7/Cerbo GX testing, and a Signal K integration install.
+
+### Interpreting App Store indicators
+
+The App Store's **Indicators** tab is populated by the remote Signal K Plugin Registry, not by the locally installed package. A successful hosted CI run gives the registry a machine-detectable plugin-test signal. README coverage, changelog entries, and packaged screenshots provide the documentation and visual-asset signals.
+
+GitHub stars, contributor activity, open issues, and npm downloads are external metrics. A new or lightly used plugin may legitimately show zero or **N/A** for them. Do not add artificial activity to change these values. Registry data can also lag behind a GitHub run or npm publication because it is cached.
 
 ## npm release
 

@@ -44,6 +44,20 @@ test('App Store package metadata is complete', () => {
   assert.ok(packagePathExists('AGENTS.md'))
 })
 
+test('repository exposes the canonical Signal K plugin test signal', () => {
+  const workflowPath = path.join(root, '.github', 'workflows', 'plugin-ci.yml')
+  assert.ok(fs.existsSync(workflowPath), 'canonical plugin CI caller must be committed')
+
+  const workflow = fs.readFileSync(workflowPath, 'utf8')
+  assert.match(workflow, /^name: Signal K Plugin CI$/m)
+  assert.match(workflow, /uses: SignalK\/signalk-server\/\.github\/workflows\/plugin-ci\.yml@master/)
+  assert.match(workflow, /test-command: npm run test:ci/)
+  assert.match(workflow, /coverage-command: npm run coverage/)
+  assert.match(workflow, /enable-armv7: true/)
+  assert.match(workflow, /enable-signalk-integration: true/)
+  assert.match(workflow, /permissions:\n  contents: read/)
+})
+
 test('npm publication metadata targets a public unscoped package', () => {
   assert.equal(pkg.name.startsWith('@'), false)
   assert.equal(pkg.publishConfig.access, 'public')

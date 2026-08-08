@@ -1,5 +1,10 @@
 # Signal K to Boating
 
+[![Signal K Plugin CI](https://github.com/OpenFairWind/signalk-to-boating/actions/workflows/plugin-ci.yml/badge.svg)](https://github.com/OpenFairWind/signalk-to-boating/actions/workflows/plugin-ci.yml)
+[![npm version](https://img.shields.io/npm/v/signalk-to-boating.svg)](https://www.npmjs.com/package/signalk-to-boating)
+[![npm downloads](https://img.shields.io/npm/dw/signalk-to-boating.svg)](https://www.npmjs.com/package/signalk-to-boating)
+[![license](https://img.shields.io/npm/l/signalk-to-boating.svg)](LICENSE)
+
 Signal K Node Server plugin that bridges the boat's GPS, depth, and Signal K AIS target data to standards-based NMEA 0183 over UDP for Garmin/Navionics **Boating** and compatible marine applications.
 
 ## Output
@@ -81,7 +86,13 @@ npm pack --dry-run
 npm audit --omit=dev
 ```
 
-The repository also calls Signal K's canonical reusable plugin CI workflow across its supported platform matrix.
+The repository calls Signal K's canonical reusable plugin CI workflow on every push and pull request. It runs the unit and coverage suites on Linux x64/arm64, macOS, and Windows with Node.js 22 and 24, checks armv7/Node.js 20 for Cerbo GX compatibility, and performs a Signal K integration install. The CI badge above links to the authoritative run history.
+
+### App Store indicators
+
+Signal K's App Store indicators are heuristic signals assembled by the Signal K Plugin Registry. This repository supplies machine-detectable tests, current release notes, substantial documentation, and packaged visual assets. GitHub stars, open-issue activity, contributor count, and npm download totals are external activity metrics; they can remain unavailable or at zero for a correct, newly published plugin and must not be manufactured.
+
+After a CI run or npm release, allow the registry cache to refresh before expecting the App Store detail page to change. A local test run proves the package itself, while the App Store indicator reflects the latest data the remote registry has collected.
 
 ## npm publication
 
