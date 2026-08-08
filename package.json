@@ -1,0 +1,60 @@
+{
+  "name": "signalk-to-boating",
+  "version": "0.4.1",
+  "description": "Bridge Signal K GPS, depth and AIS target data to NMEA 0183 over UDP for Garmin/Navionics Boating.",
+  "main": "index.js",
+  "license": "Apache-2.0",
+  "author": "OpenFairWind",
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "signalk-node-server-plugin",
+    "signalk-category-nmea-0183",
+    "signalk-category-ais",
+    "signalk-category-instruments",
+    "signalk",
+    "nmea0183",
+    "navionics",
+    "garmin",
+    "boating",
+    "ais",
+    "udp"
+  ],
+  "signalk-plugin-enabled-by-default": false,
+  "signalk": {
+    "displayName": "Signal K to Boating",
+    "appIcon": "./assets/icon.svg",
+    "screenshots": [
+      "./docs/screenshots/configuration.png"
+    ]
+  },
+  "files": [
+    "index.js",
+    "nmea.js",
+    "ais.js",
+    "assets/",
+    "docs/",
+    "README.md",
+    "CHANGELOG.md",
+    "AGENTS.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "test:ci": "node --test",
+    "coverage": "node --test --experimental-test-coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenFairWind/signalk-to-boating.git"
+  },
+  "exports": "./index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/OpenFairWind/signalk-to-boating#readme",
+  "bugs": {
+    "url": "https://github.com/OpenFairWind/signalk-to-boating/issues"
+  }
+}
