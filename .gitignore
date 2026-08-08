@@ -53,6 +53,9 @@ web_modules/
 # Optional eslint cache
 .eslintcache
 
+# JetBrains IDE project metadata
+.idea/
+
 # Optional stylelint cache
 .stylelintcache
 
