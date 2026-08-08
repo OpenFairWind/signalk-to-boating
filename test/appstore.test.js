@@ -48,7 +48,9 @@ test('repository exposes the canonical Signal K plugin test signal', () => {
   const workflowPath = path.join(root, '.github', 'workflows', 'plugin-ci.yml')
   assert.ok(fs.existsSync(workflowPath), 'canonical plugin CI caller must be committed')
 
-  const workflow = fs.readFileSync(workflowPath, 'utf8')
+  // Git may check text files out with CRLF on Windows. Normalize line endings
+  // so this content check does not depend on the runner's checkout settings.
+  const workflow = fs.readFileSync(workflowPath, 'utf8').replace(/\r\n/g, '\n')
   assert.match(workflow, /^name: Signal K Plugin CI$/m)
   assert.match(workflow, /uses: SignalK\/signalk-server\/\.github\/workflows\/plugin-ci\.yml@master/)
   assert.match(workflow, /test-command: npm run test:ci/)

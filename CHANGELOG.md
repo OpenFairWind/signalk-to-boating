@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.3
+- Make the App Store CI workflow metadata test portable across LF and CRLF checkouts.
+- Refresh release documentation and package metadata for version 0.4.3.
+
 ## 0.4.2
 - Add the canonical Signal K reusable CI caller to the published repository so the plugin registry can observe automated test results.
 - Run unit, coverage, armv7/Cerbo GX, and Signal K integration checks in hosted CI.

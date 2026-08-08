@@ -24,7 +24,7 @@ For development or pre-release testing:
 
 ```sh
 cd ~/.signalk
-npm install /path/to/signalk-to-boating-0.4.2.tgz
+npm install /path/to/signalk-to-boating-0.4.3.tgz
 ```
 
 ## Enable the plugin
