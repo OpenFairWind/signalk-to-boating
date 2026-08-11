@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.0
+- Publish the first stable release of the Signal K GPS, depth, and AIS to NMEA 0183 UDP bridge.
+- Document the stable 1.x npm installation path and the one-way Signal K data-flow guarantee.
+- Preserve UDP port 2000, independent broadcast/unicast output, genuine AIVDM encoding, and restart-safe plugin lifecycle behavior.
+
 ## 0.4.3
 - Make the App Store CI workflow metadata test portable across LF and CRLF checkouts.
 - Refresh release documentation and package metadata for version 0.4.3.

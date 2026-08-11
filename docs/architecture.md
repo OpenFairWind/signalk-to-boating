@@ -4,6 +4,8 @@
 
 Signal K to Boating is a one-way protocol bridge from the Signal K data model to NMEA 0183 over UDP. Its primary interoperability target is Garmin/Navionics Boating, while keeping the output usable by other standards-compliant marine NMEA 0183 consumers.
 
+The 1.0.0 release establishes this one-way bridge, its standards-based sentence families, and its UDP defaults as the stable public contract. Future incompatible configuration or output changes require a new major version.
+
 The plugin has three functional goals:
 
 1. make Signal K own-vessel navigation visible as an external GPS source;

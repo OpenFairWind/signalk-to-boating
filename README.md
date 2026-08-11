@@ -7,6 +7,8 @@
 
 Signal K Node Server plugin that bridges the boat's GPS, depth, and Signal K AIS target data to standards-based NMEA 0183 over UDP for Garmin/Navionics **Boating** and compatible marine applications.
 
+Version **1.0.0** is the first stable release. It preserves a one-way data flow: the plugin reads current Signal K values and never writes navigation, depth, or AIS data back into the Signal K model.
+
 ## Output
 
 - Own-vessel GPS: `GPRMC`, `GPGGA`, `GPVTG`
@@ -19,7 +21,7 @@ The default UDP port is **2000**. UDP broadcast and unicast to a specific IP can
 
 ## Install
 
-After publication to npm, install from the Signal K host with:
+Install the stable package from npm on the Signal K host with:
 
 ```sh
 cd ~/.signalk
@@ -27,6 +29,8 @@ npm install signalk-to-boating
 ```
 
 For development or pre-release testing, install a local checkout or packed `.tgz` instead.
+
+To require this stable major version explicitly, use `npm install signalk-to-boating@1`.
 
 Restart Signal K Server, then open **Server -> Plugin Config -> Signal K to Boating**, enable the plugin, and configure its UDP output.
 

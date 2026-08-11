@@ -9,12 +9,14 @@
 
 ## Installation from npm
 
-After the package is published to npm:
+Install the current stable release from npm:
 
 ```sh
 cd ~/.signalk
 npm install signalk-to-boating
 ```
+
+To remain on the stable 1.x release line, install `signalk-to-boating@1`.
 
 Restart Signal K after installation.
 
@@ -24,7 +26,7 @@ For development or pre-release testing:
 
 ```sh
 cd ~/.signalk
-npm install /path/to/signalk-to-boating-0.4.3.tgz
+npm install /path/to/signalk-to-boating-1.0.0.tgz
 ```
 
 ## Enable the plugin
@@ -159,7 +161,7 @@ GitHub stars, contributor activity, open issues, and npm downloads are external 
 
 ## npm release
 
-This project is intended to be published as `signalk-to-boating` on npm by the npm account `uniparthenope`.
+Version 1.0.0 is published as the unscoped package `signalk-to-boating` by the npm account `uniparthenope`.
 
 Before publishing:
 
