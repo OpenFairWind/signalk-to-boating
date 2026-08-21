@@ -4,7 +4,7 @@
 
 Signal K to Boating is a one-way protocol bridge from the Signal K data model to NMEA 0183 over UDP. Its primary interoperability target is Garmin/Navionics Boating, while keeping the output usable by other standards-compliant marine NMEA 0183 consumers.
 
-The 1.0.0 release establishes this one-way bridge, its standards-based sentence families, and its UDP defaults as the stable public contract. Future incompatible configuration or output changes require a new major version.
+The 1.0 release establishes this one-way bridge, its standards-based sentence families, and its UDP defaults as the stable public contract. Future incompatible configuration or output changes require a new major version.
 
 The plugin has three functional goals:
 
@@ -47,7 +47,9 @@ The plugin generates:
 - `GPGGA` — position, fix information, satellite count, HDOP, and altitude where available;
 - `GPVTG` — course and speed over ground.
 
-Signal K coordinates remain decimal degrees internally. Signal K angles are radians and are converted to degrees; speeds are converted from metres/second into the NMEA-required units.
+Signal K coordinates remain decimal degrees internally. Coordinate formatting carries rounded `60.00000` minutes into the next degree and rejects values outside the latitude/longitude ranges. Signal K angles are radians and are converted to degrees; speeds are converted from metres/second into the NMEA-required units.
+
+RMC status/mode, VTG mode, and GGA fix quality are derived conservatively from `navigation.gnss.methodQuality`. Recognized GNSS, differential, RTK, precise, estimated, manual, and simulated values map to their NMEA status/mode and GGA quality equivalents. Missing, unrecognized, or explicit no-fix quality produces RMC invalid/mode `N`, VTG mode `N`, and GGA quality `0`. Satellite count, HDOP, and altitude remain empty when absent.
 
 ### Depth
 
@@ -56,17 +58,17 @@ The plugin generates:
 - `SDDBT` — depth below transducer;
 - `SDDPT` — depth and transducer offset.
 
-The primary Signal K path is configurable and defaults to `environment.depth.belowTransducer`. If unavailable, `environment.depth.belowSurface` is used as a fallback.
+The primary Signal K path is configurable and defaults to `environment.depth.belowTransducer`. A missing configured value suppresses depth output; `belowSurface` is not silently relabeled as below-transducer depth. For the default `environment.depth.transducerToKeel` offset path, Signal K's positive downward distance is converted to the negative keel-offset convention required by DPT.
 
 ### AIS
 
 AIS targets are obtained from the Signal K `vessels` branch. The encoder produces genuine `!AIVDM` payloads rather than proprietary JSON messages.
 
-Class A targets use dynamic AIS position report type 1 and static/voyage message type 5 where required information is available. Class B targets use type 18 and type 24 static reports. Multi-fragment AIS messages are emitted as standard AIVDM fragments.
+Class A targets use dynamic AIS position report type 1 and static/voyage message type 5 where required information is available. Class B targets use type 18 and standards-sized type 24A/24B static reports. Multi-fragment AIS messages are emitted as standard AIVDM fragments.
 
 ## UDP transport
 
-Broadcast and unicast are independent outputs and can be enabled at the same time.
+Broadcast and unicast are independent outputs and can be enabled at the same time. GPS and depth sentence families are batched by emission cycle; AIS uses one complete, CRLF-terminated NMEA sentence per UDP datagram so a large target set cannot create an unbounded datagram. A multi-fragment AIS message retains fragment order and sequence metadata.
 
 ### Broadcast
 

@@ -139,12 +139,12 @@ function staticMessages(vessel, key) {
   const rawDraft = Number((draftObj && draftObj.current) ?? (draftObj && draftObj.maximum) ?? draftObj)
   const draft = Number.isFinite(rawDraft) ? Math.max(0, rawDraft) : 0
   if (cls === 'B') {
-    const a = new Bits().u(24,6).u(0,2).u(mmsi,30).u(0,2).text(name,20).u(0,8).armored()
+    const a = new Bits().u(24,6).u(0,2).u(mmsi,30).u(0,2).text(name,20).armored()
     const toBow = Math.max(0, Math.min(511, Math.round(length * 0.5)))
     const toStern = Math.max(0, Math.min(511, Math.round(length - toBow)))
     const toPort = Math.max(0, Math.min(63, Math.round(beam * 0.5)))
     const toStar = Math.max(0, Math.min(63, Math.round(beam - toPort)))
-    const b = new Bits().u(24,6).u(0,2).u(mmsi,30).u(1,2).u(shipType,8).text('',3).text(callsign,7)
+    const b = new Bits().u(24,6).u(0,2).u(mmsi,30).u(1,2).u(shipType,8).text('',7).text(callsign,7)
       .u(toBow,9).u(toStern,9).u(toPort,6).u(toStar,6).u(0,6).armored()
     return [a,b]
   }

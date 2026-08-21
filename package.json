@@ -1,6 +1,6 @@
 {
   "name": "signalk-to-boating",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bridge Signal K GPS, depth and AIS target data to NMEA 0183 over UDP for Garmin/Navionics Boating.",
   "main": "index.js",
   "license": "Apache-2.0",
@@ -42,8 +42,9 @@
   ],
   "scripts": {
     "test": "node --test",
-    "test:ci": "node --test",
-    "coverage": "node --test --experimental-test-coverage"
+    "test:ci": "npm run lint && node --test",
+    "coverage": "node --test --experimental-test-coverage",
+    "lint": "node --check index.js && node --check nmea.js && node --check ais.js && node --check test/basic.test.js && node --check test/appstore.test.js"
   },
   "repository": {
     "type": "git",

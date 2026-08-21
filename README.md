@@ -7,7 +7,7 @@
 
 Signal K Node Server plugin that bridges the boat's GPS, depth, and Signal K AIS target data to standards-based NMEA 0183 over UDP for Garmin/Navionics **Boating** and compatible marine applications.
 
-Version **1.0.0** is the first stable release. It preserves a one-way data flow: the plugin reads current Signal K values and never writes navigation, depth, or AIS data back into the Signal K model.
+Version **1.0.1** is the current stable release. It preserves a one-way data flow: the plugin reads current Signal K values and never writes navigation, depth, or AIS data back into the Signal K model.
 
 ## Output
 
@@ -63,10 +63,13 @@ Own vessel:
 - `navigation.gnss.altitude`
 - `navigation.gnss.satellites`
 - `navigation.gnss.horizontalDilution`
+- `navigation.gnss.methodQuality`
 - `environment.depth.belowTransducer` by default
 - `environment.depth.transducerToKeel` by default
 
 AIS targets are read from `vessels.*`, using MMSI, position, SOG/COG/heading, `sensors.ais.class`, name, callsign, AIS ship type, dimensions, and draft when available.
+
+Depth is emitted only from the configured depth reference, which defaults to below-transducer depth. The default positive Signal K transducer-to-keel distance is emitted as a negative NMEA DPT keel offset. AIS sentences are sent one per UDP datagram to avoid oversized batches.
 
 ## Compatibility scope
 
@@ -85,6 +88,7 @@ Requires Node.js 20 or newer.
 
 ```sh
 npm test
+npm run lint
 npm run coverage
 npm pack --dry-run
 npm audit --omit=dev

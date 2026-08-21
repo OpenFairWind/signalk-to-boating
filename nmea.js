@@ -17,11 +17,16 @@ function bangSentence(prefix, fields) {
 }
 
 function degreesToNmea(value, isLat) {
-  if (!Number.isFinite(value)) return ['', '']
+  const limit = isLat ? 90 : 180
+  if (!Number.isFinite(value) || value < -limit || value > limit) return ['', '']
   const hemi = value < 0 ? (isLat ? 'S' : 'W') : (isLat ? 'N' : 'E')
   const a = Math.abs(value)
-  const deg = Math.floor(a)
-  const minutes = (a - deg) * 60
+  let deg = Math.floor(a)
+  let minutes = Math.round((a - deg) * 60 * 1e5) / 1e5
+  if (minutes >= 60) {
+    deg += 1
+    minutes = 0
+  }
   const width = isLat ? 2 : 3
   return [`${String(deg).padStart(width, '0')}${minutes.toFixed(5).padStart(8, '0')}`, hemi]
 }
@@ -48,7 +53,7 @@ function msToKnots(ms) {
   return Number.isFinite(ms) ? ms * 1.9438444924406 : null
 }
 
-function rmc({ position, sog, cog, timestamp = new Date(), valid = true }) {
+function rmc({ position, sog, cog, timestamp = new Date(), valid = false, mode }) {
   const [lat, ns] = degreesToNmea(position && position.latitude, true)
   const [lon, ew] = degreesToNmea(position && position.longitude, false)
   const t = timeParts(timestamp)
@@ -58,30 +63,30 @@ function rmc({ position, sog, cog, timestamp = new Date(), valid = true }) {
     t.time, valid ? 'A' : 'V', lat, ns, lon, ew,
     sogKn == null ? '' : sogKn.toFixed(2),
     cogDeg == null ? '' : cogDeg.toFixed(2),
-    t.date, '', '', 'A'
+    t.date, '', '', mode || (valid ? 'A' : 'N')
   ])
 }
 
-function gga({ position, altitude, timestamp = new Date(), satellites, hdop }) {
+function gga({ position, altitude, timestamp = new Date(), satellites, hdop, fixQuality = 0 }) {
   const [lat, ns] = degreesToNmea(position && position.latitude, true)
   const [lon, ew] = degreesToNmea(position && position.longitude, false)
   const t = timeParts(timestamp)
   return sentence('GPGGA', [
-    t.time, lat, ns, lon, ew, '1',
+    t.time, lat, ns, lon, ew, String(fixQuality),
     Number.isFinite(satellites) ? String(Math.max(0, Math.round(satellites))).padStart(2, '0') : '',
     Number.isFinite(hdop) ? hdop.toFixed(1) : '',
     Number.isFinite(altitude) ? altitude.toFixed(1) : '', 'M', '', 'M', '', ''
   ])
 }
 
-function vtg({ sog, cog }) {
+function vtg({ sog, cog, mode = 'N' }) {
   const sogKn = msToKnots(sog)
   const cogDeg = radToDeg(cog)
   const kmh = Number.isFinite(sog) ? sog * 3.6 : null
   return sentence('GPVTG', [
     cogDeg == null ? '' : cogDeg.toFixed(2), 'T', '', 'M',
     sogKn == null ? '' : sogKn.toFixed(2), 'N',
-    kmh == null ? '' : kmh.toFixed(2), 'K', 'A'
+    kmh == null ? '' : kmh.toFixed(2), 'K', mode
   ])
 }
 
@@ -95,4 +100,4 @@ function dpt(depthM, offsetM) {
   return sentence('SDDPT', [depthM.toFixed(1), Number.isFinite(offsetM) ? offsetM.toFixed(1) : ''])
 }
 
-module.exports = { checksum, sentence, bangSentence, rmc, gga, vtg, dbt, dpt, radToDeg, msToKnots }
+module.exports = { checksum, sentence, bangSentence, degreesToNmea, rmc, gga, vtg, dbt, dpt, radToDeg, msToKnots }

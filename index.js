@@ -72,25 +72,44 @@ module.exports = function (app) {
     return undefined
   }
 
-  function send(lines) {
+  function send(lines, oneSentencePerDatagram = false) {
     if (!socket) return
     const arr = Array.isArray(lines) ? lines : [lines]
     const valid = arr.filter(Boolean)
     if (!valid.length) return
-    const payload = Buffer.from(valid.join('\r\n') + '\r\n', 'ascii')
+    const payloads = oneSentencePerDatagram
+      ? valid.map(line => Buffer.from(line + '\r\n', 'ascii'))
+      : [Buffer.from(valid.join('\r\n') + '\r\n', 'ascii')]
     const destinations = []
     if (options.enableBroadcast && options.broadcastAddress) destinations.push(options.broadcastAddress)
     if (options.enableUnicast && options.destination && !destinations.includes(options.destination)) destinations.push(options.destination)
-    for (const destination of destinations) {
-      socket.send(payload, options.port, destination, err => {
-        if (err) reportError(`UDP send error to ${destination}: ${err.message}`)
-      })
+    for (const payload of payloads) {
+      for (const destination of destinations) {
+        socket.send(payload, options.port, destination, err => {
+          if (err) reportError(`UDP send error to ${destination}: ${err.message}`)
+        })
+      }
     }
   }
 
   function reportError(message) {
     if (typeof app.setPluginError === 'function') app.setPluginError(message)
     if (typeof app.error === 'function') app.error(message)
+  }
+
+  function gnssQuality() {
+    const quality = getSelf('navigation.gnss.methodQuality')
+    const normalized = typeof quality === 'string' ? quality.trim().toLowerCase() : ''
+    if (!normalized || normalized === 'no fix') return { valid: false, mode: 'N', fixQuality: 0 }
+    if (normalized.includes('rtk fixed')) return { valid: true, mode: 'R', fixQuality: 4 }
+    if (normalized.includes('rtk float')) return { valid: true, mode: 'F', fixQuality: 5 }
+    if (normalized.includes('dgnss') || normalized.includes('dgps')) return { valid: true, mode: 'D', fixQuality: 2 }
+    if (normalized.includes('precise')) return { valid: true, mode: 'P', fixQuality: 3 }
+    if (normalized.includes('estimated') || normalized.includes('dead reckoning')) return { valid: true, mode: 'E', fixQuality: 6 }
+    if (normalized.includes('manual')) return { valid: true, mode: 'M', fixQuality: 7 }
+    if (normalized.includes('simulat')) return { valid: true, mode: 'S', fixQuality: 8 }
+    if (normalized.includes('gnss') || normalized.includes('gps')) return { valid: true, mode: 'A', fixQuality: 1 }
+    return { valid: false, mode: 'N', fixQuality: 0 }
   }
 
   function emitGps() {
@@ -103,16 +122,20 @@ module.exports = function (app) {
     const altitude = position.altitude ?? getSelf('navigation.gnss.altitude')
     const sats = getSelf('navigation.gnss.satellites')
     const hdop = getSelf('navigation.gnss.horizontalDilution')
+    const quality = gnssQuality()
     const now = new Date()
-    send([rmc({ position, sog, cog, timestamp: now }), gga({ position, altitude, timestamp: now, satellites: sats, hdop }), vtg({ sog, cog })])
+    send([
+      rmc({ position, sog, cog, timestamp: now, valid: quality.valid, mode: quality.mode }),
+      gga({ position, altitude, timestamp: now, satellites: sats, hdop, fixQuality: quality.fixQuality }),
+      vtg({ sog, cog, mode: quality.mode })
+    ])
   }
 
   function emitDepth() {
-    let depth = getSelf(options.depthPath)
-    if (!Number.isFinite(depth)) depth = getSelf('environment.depth.belowSurface')
+    const depth = getSelf(options.depthPath)
     if (!Number.isFinite(depth) || depth < 0) return
     let offset = getSelf(options.depthOffsetPath)
-    if (!Number.isFinite(offset)) offset = getSelf('environment.depth.transducerToKeel')
+    if (options.depthOffsetPath === DEFAULT_OPTIONS.depthOffsetPath && Number.isFinite(offset)) offset = -Math.abs(offset)
     send([dbt(depth), dpt(depth, offset)])
   }
 
@@ -136,7 +159,7 @@ module.exports = function (app) {
         lastStatic.set(dyn.mmsi, nowMs)
       }
     }
-    send(out)
+    send(out, true)
   }
 
   function schedule(fn, ms) {

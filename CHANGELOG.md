@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1
+- Correct AIS Class B type 24A and 24B static reports to their standard 160-bit and 168-bit lengths, including the full 42-bit type 24B vendor field.
+- Convert the default positive Signal K transducer-to-keel distance to a negative NMEA DPT keel offset and stop relabeling below-surface depth as below-transducer depth.
+- Carry coordinate minute rounding into the next degree and reject coordinates outside valid latitude/longitude ranges.
+- Send AIS output as one complete CRLF-terminated sentence per UDP datagram while preserving fragment order and broadcast/unicast fan-out.
+- Derive conservative RMC/VTG modes and GGA validity from Signal K GNSS method quality instead of claiming a fix from position alone.
+- Add independent AIS bit decoding, coordinate/property checks, depth/GNSS integration coverage, transport stress coverage, and a dependency-free syntax-check command.
+
 ## 1.0.0
 - Publish the first stable release of the Signal K GPS, depth, and AIS to NMEA 0183 UDP bridge.
 - Document the stable 1.x npm installation path and the one-way Signal K data-flow guarantee.

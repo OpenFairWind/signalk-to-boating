@@ -26,7 +26,7 @@ For development or pre-release testing:
 
 ```sh
 cd ~/.signalk
-npm install /path/to/signalk-to-boating-1.0.0.tgz
+npm install /path/to/signalk-to-boating-1.0.1.tgz
 ```
 
 ## Enable the plugin
@@ -95,7 +95,11 @@ The default offset source is:
 environment.depth.transducerToKeel
 ```
 
-If the primary depth value is unavailable, the plugin tries `environment.depth.belowSurface`.
+The plugin does not substitute `environment.depth.belowSurface` when the configured below-transducer value is absent because those paths use different physical references. In that case no depth sentence is emitted. With the default offset path, a positive Signal K transducer-to-keel distance is converted to a negative NMEA DPT keel offset.
+
+## GNSS validity
+
+The plugin uses `navigation.gnss.methodQuality` to determine RMC validity/mode, VTG mode, and GGA fix quality. Missing, unknown, or explicit no-fix quality is reported conservatively as invalid/no-mode GPS output and GGA quality zero; a position alone is not treated as proof of a current autonomous fix. Satellite count, HDOP, and altitude fields remain empty when Signal K does not provide them.
 
 ## Network setup
 
@@ -146,6 +150,7 @@ From the plugin directory:
 
 ```sh
 npm test
+npm run lint
 npm run coverage
 npm pack --dry-run
 npm audit --omit=dev
@@ -161,7 +166,7 @@ GitHub stars, contributor activity, open issues, and npm downloads are external 
 
 ## npm release
 
-Version 1.0.0 is published as the unscoped package `signalk-to-boating` by the npm account `uniparthenope`.
+Version 1.0.1 is prepared as the unscoped package `signalk-to-boating` for publication by the npm account `uniparthenope`.
 
 Before publishing:
 
