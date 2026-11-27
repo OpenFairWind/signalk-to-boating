@@ -107,6 +107,10 @@ test('repository CI and release workflows run the full validation and publish vi
   assert.match(release, /npm publish --provenance --access public/)
   assert.match(release, /npm run verify:package/)
   assert.doesNotMatch(release, /NPM_TOKEN|NODE_AUTH_TOKEN/)
+  // Re-runs and manually pre-published versions must not fail the release.
+  assert.match(release, /npm view "\$spec" version/)
+  assert.match(release, /if: steps\.npm\.outputs\.published != 'true'\n\s+run: npm publish/)
+  assert.match(release, /gh release view "\$RELEASE_TAG"/)
   assert.equal(pkg.scripts['verify:package'], 'node scripts/verify-package.js')
   assert.equal(pkg.files.includes('scripts/'), false)
 })
