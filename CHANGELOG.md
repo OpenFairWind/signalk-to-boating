@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Release workflow: skip `npm publish` when the tagged version is already on npm and skip creating a GitHub release that already exists, so re-runs and manually published versions no longer fail. (Repository CI only; the npm package is unchanged.)
+
 ## 1.1.0
 - Stop re-broadcasting stale data: own-vessel GPS/depth values older than **Stop sending own GPS/depth values older than** (default 30 s) and AIS targets not heard for **Stop sending AIS targets not heard for** (default 600 s) are no longer sent. Values without a Signal K timestamp are still sent; `0` disables either check.
 - Treat the Signal K `navigation.gnss.methodQuality` values `no GPS` and `Error` as no fix; 1.0.1 reported `no GPS` as a valid autonomous fix.

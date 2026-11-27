@@ -108,7 +108,7 @@ npm audit --omit=dev
 
 - `.github/workflows/ci.yml` — repository quality gate on pushes to `main`/`development` and on pull requests: lint, tests and coverage on Node.js 20, 22 and 24, then package verification, `npm audit`, and `npm pack --dry-run`.
 - `.github/workflows/plugin-ci.yml` — Signal K's canonical plugin CI (the App Store test signal).
-- `.github/workflows/release.yml` — pushing a `vX.Y.Z` tag re-runs the validation, checks that the tag matches `package.json`, publishes to npm with provenance via npm trusted publishing (no stored token), and creates a GitHub release from the matching `CHANGELOG.md` section.
+- `.github/workflows/release.yml` — pushing a `vX.Y.Z` tag re-runs the validation, checks that the tag matches `package.json`, publishes to npm with provenance via npm trusted publishing (no stored token), and creates a GitHub release from the matching `CHANGELOG.md` section. Steps whose result already exists (version on npm, GitHub release) are skipped, so re-running a release or tagging a manually published version is safe.
 
 The repository calls Signal K's canonical reusable plugin CI workflow on every push and pull request. It runs the unit and coverage suites on Linux x64/arm64, macOS, and Windows with Node.js 22 and 24, checks armv7/Node.js 20 for Cerbo GX compatibility, and performs a Signal K integration install. The CI badge above links to the authoritative run history.
 

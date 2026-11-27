@@ -206,4 +206,4 @@ Release steps:
 1. Bump `package.json` and `package-lock.json`, add the matching `CHANGELOG.md` section, and merge to `main`.
 2. Tag and push: `git tag v1.1.0 && git push origin v1.1.0`.
 
-The workflow re-runs lint, tests, coverage, audit and `verify:package`, refuses to publish if the tag does not match the package version, publishes with npm provenance, and creates a GitHub release from the changelog section. A release can also be re-run manually from the Actions tab with an existing tag.
+The workflow re-runs lint, tests, coverage, audit and `verify:package`, refuses to publish if the tag does not match the package version, publishes with npm provenance, and creates a GitHub release from the changelog section. If the version is already on npm (for example after a manual `npm publish`) the publish step is skipped, and an existing GitHub release is left untouched, so the workflow can safely be re-run manually from the Actions tab with an existing tag.
