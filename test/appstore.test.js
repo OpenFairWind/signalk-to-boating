@@ -94,6 +94,23 @@ test('repository exposes the canonical Signal K plugin test signal', () => {
   assert.match(workflow, /permissions:\n  contents: read/)
 })
 
+test('repository CI and release workflows run the full validation and publish via trusted publishing', () => {
+  const read = name => fs.readFileSync(path.join(root, '.github', 'workflows', name), 'utf8').replace(/\r\n/g, '\n')
+  const ci = read('ci.yml')
+  for (const command of ['npm run lint', 'npm test', 'npm run coverage', 'npm run verify:package', 'npm audit --omit=dev', 'npm pack --dry-run']) {
+    assert.ok(ci.includes(command), `ci.yml must run ${command}`)
+  }
+  assert.match(ci, /node: \['20', '22', '24'\]/)
+  const release = read('release.yml')
+  assert.match(release, /tags: \['v\*\.\*\.\*'\]/)
+  assert.match(release, /id-token: write/)
+  assert.match(release, /npm publish --provenance --access public/)
+  assert.match(release, /npm run verify:package/)
+  assert.doesNotMatch(release, /NPM_TOKEN|NODE_AUTH_TOKEN/)
+  assert.equal(pkg.scripts['verify:package'], 'node scripts/verify-package.js')
+  assert.equal(pkg.files.includes('scripts/'), false)
+})
+
 test('npm publication metadata targets a public unscoped package', () => {
   assert.equal(pkg.name.startsWith('@'), false)
   assert.equal(pkg.publishConfig.access, 'public')

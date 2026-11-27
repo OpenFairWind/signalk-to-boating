@@ -53,16 +53,29 @@ function msToKnots(ms) {
   return Number.isFinite(ms) ? ms * 1.9438444924406 : null
 }
 
+// Speed over ground cannot be negative; treat such input as unavailable.
+function validSpeed(ms) {
+  return Number.isFinite(ms) && ms >= 0 ? ms : null
+}
+
+// Format a 0..360 degree angle so rounding never yields 360.00.
+function formatAngle(deg, digits = 2) {
+  if (deg == null) return ''
+  const scale = 10 ** digits
+  let rounded = Math.round(deg * scale) / scale
+  if (rounded >= 360) rounded -= 360
+  return rounded.toFixed(digits)
+}
+
 function rmc({ position, sog, cog, timestamp = new Date(), valid = false, mode }) {
   const [lat, ns] = degreesToNmea(position && position.latitude, true)
   const [lon, ew] = degreesToNmea(position && position.longitude, false)
   const t = timeParts(timestamp)
-  const sogKn = msToKnots(sog)
-  const cogDeg = radToDeg(cog)
+  const sogKn = msToKnots(validSpeed(sog))
   return sentence('GPRMC', [
     t.time, valid ? 'A' : 'V', lat, ns, lon, ew,
     sogKn == null ? '' : sogKn.toFixed(2),
-    cogDeg == null ? '' : cogDeg.toFixed(2),
+    formatAngle(radToDeg(cog)),
     t.date, '', '', mode || (valid ? 'A' : 'N')
   ])
 }
@@ -80,11 +93,11 @@ function gga({ position, altitude, timestamp = new Date(), satellites, hdop, fix
 }
 
 function vtg({ sog, cog, mode = 'N' }) {
-  const sogKn = msToKnots(sog)
-  const cogDeg = radToDeg(cog)
-  const kmh = Number.isFinite(sog) ? sog * 3.6 : null
+  const speed = validSpeed(sog)
+  const sogKn = msToKnots(speed)
+  const kmh = speed == null ? null : speed * 3.6
   return sentence('GPVTG', [
-    cogDeg == null ? '' : cogDeg.toFixed(2), 'T', '', 'M',
+    formatAngle(radToDeg(cog)), 'T', '', 'M',
     sogKn == null ? '' : sogKn.toFixed(2), 'N',
     kmh == null ? '' : kmh.toFixed(2), 'K', mode
   ])
@@ -100,4 +113,4 @@ function dpt(depthM, offsetM) {
   return sentence('SDDPT', [depthM.toFixed(1), Number.isFinite(offsetM) ? offsetM.toFixed(1) : ''])
 }
 
-module.exports = { checksum, sentence, bangSentence, degreesToNmea, rmc, gga, vtg, dbt, dpt, radToDeg, msToKnots }
+module.exports = { checksum, sentence, bangSentence, degreesToNmea, rmc, gga, vtg, dbt, dpt, radToDeg, msToKnots, validSpeed, formatAngle }

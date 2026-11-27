@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.0
+- Stop re-broadcasting stale data: own-vessel GPS/depth values older than **Stop sending own GPS/depth values older than** (default 30 s) and AIS targets not heard for **Stop sending AIS targets not heard for** (default 600 s) are no longer sent. Values without a Signal K timestamp are still sent; `0` disables either check.
+- Treat the Signal K `navigation.gnss.methodQuality` values `no GPS` and `Error` as no fix; 1.0.1 reported `no GPS` as a valid autonomous fix.
+- Map Signal K `navigation.state` strings (`motoring`, `anchored`, `moored`, `sailing`, ...) to AIS navigational status; 1.0.1 always sent "not defined".
+- Encode the AIS type 5 destination from `navigation.destination.commonName` (1.0.1 sent `[OBJECT OBJECT]`), the ETA from `navigation.destination.eta`, and the IMO number from `registrations.imo`; unknown ETA is now the standard 0/0/24/60.
+- Encode AIS dimensions from `sensors.ais.fromBow`/`fromCenter` when present; otherwise use the ITU "reference point unknown" form (A = C = 0) instead of assuming a mid-ship antenna.
+- Use the target's real report second in the AIS time stamp field, or 60 (not available) when unknown, instead of the current second.
+- Wrap rounded course/heading at 360 to 0 in RMC, VTG and AIS; omit negative speed over ground; cap AIS rate of turn at +/-126.
+- Never let an exception or synchronous `socket.send` error escape a timer and crash Signal K Server; report it through the plugin status instead.
+- Throttle identical UDP error messages to one per minute and restore the running status after sends succeed again.
+- Normalize stored configuration (missing/invalid port, intervals, booleans, padded IP addresses) to safe values.
+- Convert any `*.transducerToKeel` offset path, not only the default, to a negative DPT offset; exclude the own vessel when it is identified only by `app.selfContext`; forget AIS static-report state for departed targets.
+- Add repository CI (Node 20/22/24 tests, coverage, package verification, audit), a tag-driven npm release workflow using trusted publishing with provenance, Dependabot for GitHub Actions, and `npm run verify:package`.
+- Add regression tests for every fix above.
+
 ## 1.0.1
 - Correct AIS Class B type 24A and 24B static reports to their standard 160-bit and 168-bit lengths, including the full 42-bit type 24B vendor field.
 - Convert the default positive Signal K transducer-to-keel distance to a negative NMEA DPT keel offset and stop relabeling below-surface depth as below-transducer depth.
