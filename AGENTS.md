@@ -31,6 +31,9 @@ The plugin must preserve these user-visible behaviors unless a release explicitl
 - `docs/getting_started.md` — installation, configuration, validation, and troubleshooting.
 - `docs/screenshots` — App Store screenshots referenced by `package.json`.
 - `.github/workflows/plugin-ci.yml` — caller for Signal K's canonical reusable plugin CI.
+- `.github/workflows/ci.yml` — repository quality gate (Node 20/22/24 tests, coverage, package verification, audit).
+- `.github/workflows/release.yml` — tag-driven npm publication via trusted publishing with provenance.
+- `scripts/verify-package.js` — tarball-content and version-agreement check (`npm run verify:package`); not published.
 - `CHANGELOG.md` — per-version user-visible release notes.
 - `README.md` — npm and Signal K App Store landing documentation.
 
@@ -72,10 +75,13 @@ Own-vessel paths currently used:
 - `navigation.gnss.altitude`
 - `navigation.gnss.satellites`
 - `navigation.gnss.horizontalDilution`
+- `navigation.gnss.methodQuality`
 - configurable depth path, default `environment.depth.belowTransducer`
 - configurable depth offset path, default `environment.depth.transducerToKeel`
 
-Remote targets are read from `vessels.*`. AIS encoding may use MMSI, AIS class, position, SOG, COG, heading, name, callsign, ship type, dimensions, and draft when present.
+Remote targets are read from `vessels.*`. AIS encoding may use MMSI, AIS class, position and its timestamp, SOG, COG, heading, rate of turn, navigation state, name, callsign, IMO number, ship type, dimensions and AIS antenna position, draft, and destination/ETA when present.
+
+Own-vessel values older than `ownDataMaxAgeSeconds` and AIS targets older than `aisMaxAgeSeconds` must not be emitted; values without a timestamp are accepted.
 
 Signal K navigation angles are radians; NMEA courses/headings are degrees. Signal K speeds are SI metres/second; convert explicitly for NMEA fields.
 
@@ -118,6 +124,7 @@ Before packaging or publishing, run:
 ```sh
 npm test
 npm run coverage
+npm run verify:package
 npm pack --dry-run
 npm audit --omit=dev
 ```
@@ -133,7 +140,8 @@ Tests must cover at least:
 - plugin constructor/lifecycle/schema shape;
 - default UDP port 2000;
 - broadcast + unicast configuration;
-- clean `start() -> stop() -> start()` behavior.
+- clean `start() -> stop() -> start()` behavior;
+- stale-data suppression and crash-safe periodic output.
 
 When fixing a protocol or lifecycle bug, add a regression test that fails before the fix and passes after it.
 

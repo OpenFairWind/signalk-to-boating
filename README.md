@@ -7,7 +7,7 @@
 
 Signal K Node Server plugin that bridges the boat's GPS, depth, and Signal K AIS target data to standards-based NMEA 0183 over UDP for Garmin/Navionics **Boating** and compatible marine applications.
 
-Version **1.0.1** is the current stable release. It preserves a one-way data flow: the plugin reads current Signal K values and never writes navigation, depth, or AIS data back into the Signal K model.
+Version **1.1.0** is the current stable release. It preserves a one-way data flow: the plugin reads current Signal K values and never writes navigation, depth, or AIS data back into the Signal K model.
 
 ## Output
 
@@ -67,9 +67,18 @@ Own vessel:
 - `environment.depth.belowTransducer` by default
 - `environment.depth.transducerToKeel` by default
 
-AIS targets are read from `vessels.*`, using MMSI, position, SOG/COG/heading, `sensors.ais.class`, name, callsign, AIS ship type, dimensions, and draft when available.
+AIS targets are read from `vessels.*`, using MMSI, position and its timestamp, SOG/COG/heading, rate of turn, navigation state, `sensors.ais.class`, name, callsign, IMO number, AIS ship type, dimensions and AIS antenna position, draft, and destination/ETA when available.
 
-Depth is emitted only from the configured depth reference, which defaults to below-transducer depth. The default positive Signal K transducer-to-keel distance is emitted as a negative NMEA DPT keel offset. AIS sentences are sent one per UDP datagram to avoid oversized batches.
+Depth is emitted only from the configured depth reference, which defaults to below-transducer depth. A positive Signal K transducer-to-keel distance is emitted as a negative NMEA DPT keel offset. AIS sentences are sent one per UDP datagram to avoid oversized batches.
+
+## Stale data
+
+The plugin never re-broadcasts old values as if they were current:
+
+- **Stop sending own GPS/depth values older than** (default **30 s**) — own-vessel values whose Signal K timestamp is older are omitted, so a failed GPS or sounder is not reported as a live fix or depth.
+- **Stop sending AIS targets not heard for** (default **600 s**) — targets whose last position report is older are dropped.
+
+Values without a Signal K timestamp are still sent. Set either limit to `0` to disable it.
 
 ## Compatibility scope
 
@@ -90,9 +99,16 @@ Requires Node.js 20 or newer.
 npm test
 npm run lint
 npm run coverage
+npm run verify:package
 npm pack --dry-run
 npm audit --omit=dev
 ```
+
+### CI/CD
+
+- `.github/workflows/ci.yml` — repository quality gate on pushes to `main`/`development` and on pull requests: lint, tests and coverage on Node.js 20, 22 and 24, then package verification, `npm audit`, and `npm pack --dry-run`.
+- `.github/workflows/plugin-ci.yml` — Signal K's canonical plugin CI (the App Store test signal).
+- `.github/workflows/release.yml` — pushing a `vX.Y.Z` tag re-runs the validation, checks that the tag matches `package.json`, publishes to npm with provenance via npm trusted publishing (no stored token), and creates a GitHub release from the matching `CHANGELOG.md` section.
 
 The repository calls Signal K's canonical reusable plugin CI workflow on every push and pull request. It runs the unit and coverage suites on Linux x64/arm64, macOS, and Windows with Node.js 22 and 24, checks armv7/Node.js 20 for Cerbo GX compatibility, and performs a Signal K integration install. The CI badge above links to the authoritative run history.
 
@@ -115,9 +131,12 @@ npm whoami
 npm test
 npm run coverage
 npm audit --omit=dev
+npm run verify:package
 npm pack --dry-run
 npm publish
 ```
+
+Automated publishing via `release.yml` is preferred once the `uniparthenope` account has registered this repository's `release.yml` as an npm trusted publisher and a GitHub environment named `npm` exists; see [Getting started](docs/getting_started.md#npm-release).
 
 No runtime npm dependencies or install-time lifecycle scripts are required.
 

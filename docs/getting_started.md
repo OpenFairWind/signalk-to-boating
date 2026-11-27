@@ -26,7 +26,7 @@ For development or pre-release testing:
 
 ```sh
 cd ~/.signalk
-npm install /path/to/signalk-to-boating-1.0.1.tgz
+npm install /path/to/signalk-to-boating-1.1.0.tgz
 ```
 
 ## Enable the plugin
@@ -81,6 +81,13 @@ Normally keep all three enabled:
 
 Default update intervals are 1 second for GPS, 1 second for depth, 2 seconds for AIS dynamic data, and 60 seconds for AIS static data.
 
+## Stale-data limits
+
+- **Stop sending own GPS/depth values older than (seconds, 0 = never)** — default `30`. Own-vessel position, speed, course, GNSS details and depth whose Signal K timestamp is older than this are not sent. If the position itself is stale, no GPS sentences are sent; if only speed or course is stale, those fields are left empty. This prevents a disconnected GPS or a sounder that has lost the bottom from being repeated as live data.
+- **Stop sending AIS targets not heard for (seconds, 0 = never)** — default `600`. Targets whose last position report is older are no longer forwarded.
+
+Values without a Signal K timestamp are always sent. If the Signal K host clock is badly wrong (for example a Raspberry Pi without a real-time clock before time synchronisation), timestamps may look old; fix the clock (for example with a time-setting plugin) or set the limit to `0`.
+
 ## Depth configuration
 
 The default depth source is:
@@ -95,11 +102,11 @@ The default offset source is:
 environment.depth.transducerToKeel
 ```
 
-The plugin does not substitute `environment.depth.belowSurface` when the configured below-transducer value is absent because those paths use different physical references. In that case no depth sentence is emitted. With the default offset path, a positive Signal K transducer-to-keel distance is converted to a negative NMEA DPT keel offset.
+The plugin does not substitute `environment.depth.belowSurface` when the configured below-transducer value is absent because those paths use different physical references. In that case no depth sentence is emitted. For any offset path ending in `transducerToKeel` (including the default), a positive Signal K transducer-to-keel distance is converted to a negative NMEA DPT keel offset; other offset paths, such as `environment.depth.surfaceToTransducer`, are sent unchanged as positive offsets.
 
 ## GNSS validity
 
-The plugin uses `navigation.gnss.methodQuality` to determine RMC validity/mode, VTG mode, and GGA fix quality. Missing, unknown, or explicit no-fix quality is reported conservatively as invalid/no-mode GPS output and GGA quality zero; a position alone is not treated as proof of a current autonomous fix. Satellite count, HDOP, and altitude fields remain empty when Signal K does not provide them.
+The plugin uses `navigation.gnss.methodQuality` to determine RMC validity/mode, VTG mode, and GGA fix quality. Missing, unknown, `no GPS`, or `Error` quality is reported conservatively as invalid/no-mode GPS output and GGA quality zero; a position alone is not treated as proof of a current autonomous fix. Satellite count, HDOP, and altitude fields remain empty when Signal K does not provide them.
 
 ## Network setup
 
@@ -140,7 +147,9 @@ If GPS is missing, verify `navigation.position` in Signal K and check that latit
 
 If depth is missing, inspect the configured depth path in the Signal K Data Browser and select the path populated by the onboard depth instrument.
 
-If AIS targets are missing, confirm that remote vessels are visible under `vessels.*` in Signal K. The plugin cannot export targets that the Signal K server has not received.
+If AIS targets are missing, confirm that remote vessels are visible under `vessels.*` in Signal K and that their position has been updated within the AIS age limit. The plugin cannot export targets that the Signal K server has not received.
+
+If GPS or depth disappears while Signal K still shows a value, check its timestamp in the Data Browser: values older than the own-data age limit are intentionally not sent.
 
 If nothing arrives over UDP, check port `2000`, firewall rules, Wi-Fi client isolation, subnet topology, and the phone/tablet IP. Trying broadcast and unicast simultaneously is a useful diagnostic configuration.
 
@@ -152,11 +161,14 @@ From the plugin directory:
 npm test
 npm run lint
 npm run coverage
+npm run verify:package
 npm pack --dry-run
 npm audit --omit=dev
 ```
 
-The repository also contains `.github/workflows/plugin-ci.yml`, which invokes Signal K's canonical reusable plugin CI on every push and pull request. It performs package validation, schema/lifecycle checks, API-use scans, package/install checks, cross-platform unit and coverage testing, armv7/Cerbo GX testing, and a Signal K integration install.
+`npm run verify:package` checks that the npm tarball contains every file referenced by package metadata and that `package.json`, `package-lock.json`, and `CHANGELOG.md` agree on the version.
+
+`.github/workflows/ci.yml` runs these checks on Node.js 20, 22 and 24 for every push to `main` or `development` and every pull request. The repository also contains `.github/workflows/plugin-ci.yml`, which invokes Signal K's canonical reusable plugin CI on every push and pull request. It performs package validation, schema/lifecycle checks, API-use scans, package/install checks, cross-platform unit and coverage testing, armv7/Cerbo GX testing, and a Signal K integration install.
 
 ### Interpreting App Store indicators
 
@@ -166,7 +178,7 @@ GitHub stars, contributor activity, open issues, and npm downloads are external 
 
 ## npm release
 
-Version 1.0.1 is prepared as the unscoped package `signalk-to-boating` for publication by the npm account `uniparthenope`.
+Version 1.1.0 is prepared as the unscoped package `signalk-to-boating` for publication by the npm account `uniparthenope`.
 
 Before publishing:
 
@@ -181,3 +193,17 @@ uniparthenope
 ```
 
 Then run the full validation commands above, inspect the dry-run tarball contents, and publish with `npm publish`. Do not store npm credentials or tokens in the repository.
+
+### Automated release
+
+`.github/workflows/release.yml` publishes when a version tag is pushed. One-time setup by a maintainer:
+
+1. On npmjs.com, signed in as `uniparthenope`, open the `signalk-to-boating` package settings and add a **trusted publisher**: GitHub Actions, organization `OpenFairWind`, repository `signalk-to-boating`, workflow `release.yml`, environment `npm`.
+2. In the GitHub repository settings, create an environment named `npm` (optionally with required reviewers).
+
+Release steps:
+
+1. Bump `package.json` and `package-lock.json`, add the matching `CHANGELOG.md` section, and merge to `main`.
+2. Tag and push: `git tag v1.1.0 && git push origin v1.1.0`.
+
+The workflow re-runs lint, tests, coverage, audit and `verify:package`, refuses to publish if the tag does not match the package version, publishes with npm provenance, and creates a GitHub release from the changelog section. A release can also be re-run manually from the Actions tab with an existing tag.
